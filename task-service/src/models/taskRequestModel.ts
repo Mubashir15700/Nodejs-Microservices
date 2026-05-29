@@ -29,18 +29,12 @@ const TaskRequestSchema = new Schema<ITaskRequest>(
 );
 
 // Prevent duplicate requests
-TaskRequestSchema.index(
-  { taskId: 1, requestedBy: 1 },
-  { unique: true }
-);
+TaskRequestSchema.index({ taskId: 1, requestedBy: 1 }, { unique: true });
 
 // Optimize queries
 TaskRequestSchema.index({ requestedBy: 1 });
 TaskRequestSchema.index({ taskId: 1 });
 
-const TaskRequest = mongoose.model<ITaskRequest>(
-  'TaskRequest',
-  TaskRequestSchema
-);
+const TaskRequest = mongoose.model<ITaskRequest>('TaskRequest', TaskRequestSchema);
 
 export default TaskRequest;

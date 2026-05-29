@@ -11,9 +11,7 @@ const PROCESSING_TIMEOUT = 5000;
 const withTimeout = (promise: Promise<any>, ms: number) =>
   Promise.race([
     promise,
-    new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Processing timeout')), ms)
-    ),
+    new Promise((_, reject) => setTimeout(() => reject(new Error('Processing timeout')), ms)),
   ]);
 
 const startConsuming = async (channel: Channel, queueName: string) => {
@@ -36,11 +34,7 @@ const startConsuming = async (channel: Channel, queueName: string) => {
       durable: true,
     });
 
-    await channel.bindQueue(
-      `${queueName}.dlq`,
-      `${queueName}.dlx`,
-      ''
-    );
+    await channel.bindQueue(`${queueName}.dlq`, `${queueName}.dlx`, '');
 
     logger.info(`Waiting for messages in queue: ${queueName}`);
 
@@ -59,8 +53,7 @@ const startConsuming = async (channel: Channel, queueName: string) => {
       }
 
       // Retry count
-      const retries =
-        (msg.properties.headers?.['x-retries'] as number) || 0;
+      const retries = (msg.properties.headers?.['x-retries'] as number) || 0;
 
       let userId = '';
       let msgText = '';
@@ -97,10 +90,7 @@ const startConsuming = async (channel: Channel, queueName: string) => {
 
       try {
         // Timeout-protected processing
-        await withTimeout(
-          createNotification(userId, msgText, notifType),
-          PROCESSING_TIMEOUT
-        );
+        await withTimeout(createNotification(userId, msgText, notifType), PROCESSING_TIMEOUT);
 
         // Emit via Socket.IO
         try {
@@ -146,9 +136,7 @@ const startConsuming = async (channel: Channel, queueName: string) => {
       }
     });
   } catch (err) {
-    logger.error(
-      `Error setting up consumer for queue "${queueName}": ${err}`
-    );
+    logger.error(`Error setting up consumer for queue "${queueName}": ${err}`);
   }
 };
 

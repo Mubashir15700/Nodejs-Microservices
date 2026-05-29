@@ -9,7 +9,7 @@ import {
   requestTask,
   getAllRequests,
   deleteTasks,
-  deleteRequests
+  deleteRequests,
 } from '../controllers/taskController';
 
 const router = Router();
