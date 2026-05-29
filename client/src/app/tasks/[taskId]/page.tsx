@@ -144,12 +144,13 @@ export default function TaskDetailsPage() {
             </div>
 
             <span
-              className={`inline-flex w-fit items-center rounded-full px-4 py-1 text-sm font-semibold capitalize ${task.status === 'completed'
-                ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
-                : task.status === 'in-progress'
-                  ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300'
-                  : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
-                }`}
+              className={`inline-flex w-fit items-center rounded-full px-4 py-1 text-sm font-semibold capitalize ${
+                task.status === 'completed'
+                  ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
+                  : task.status === 'in-progress'
+                    ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300'
+                    : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+              }`}
             >
               {task.status.replace('-', ' ')}
             </span>
