@@ -101,11 +101,23 @@ export default function TaskDetailsPage() {
   const handleRequestAssign = async () => {
     setRequestingAssign(true);
     setError(null);
+
     try {
-      // Replace with your API call to request assignment
-      // For demo, we just assign currentUserId immediately
-      await new Promise((res) => setTimeout(res, 800));
-      setTask({ ...task, assigneeId: user?.id });
+      const response = await fetchWithAuth(`/api/task?action=requestAssign&id=${params?.taskId}`, {
+        method: 'POST',
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setError(result?.data?.message || result?.message || 'Failed to request assignment');
+        return;
+      }
+
+      if (result.task) {
+        updateTask(result.task);
+        setTask(result.task);
+      }
     } catch {
       setError('Failed to request assignment');
     } finally {
@@ -132,13 +144,12 @@ export default function TaskDetailsPage() {
             </div>
 
             <span
-              className={`inline-flex w-fit items-center rounded-full px-4 py-1 text-sm font-semibold capitalize ${
-                task.status === 'completed'
-                  ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
-                  : task.status === 'in-progress'
-                    ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300'
-                    : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
-              }`}
+              className={`inline-flex w-fit items-center rounded-full px-4 py-1 text-sm font-semibold capitalize ${task.status === 'completed'
+                ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
+                : task.status === 'in-progress'
+                  ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300'
+                  : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                }`}
             >
               {task.status.replace('-', ' ')}
             </span>

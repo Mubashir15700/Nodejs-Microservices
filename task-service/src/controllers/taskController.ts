@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import Task from '../models/taskModel';
+import TaskRequest from '../models/taskRequestModel';
 import { REDIS_CACHE_TTL } from '../config/envConfig';
 import { getChannel } from '../services/rabbitmqService';
 import redisClient from '../services/redisService';
-import { getUserByID } from '../services/userService';
+import { getAdminId, getUserByID } from '../services/userService';
 import sendToQueue from '../producers/queuePublisher';
 import { AuthenticatedRequest } from '../middlewares/authMiddleware';
 import handleError from '../utils/errorHandler';
@@ -35,8 +36,11 @@ export const createTask = async (req: Request, res: Response) => {
 
     if (validAssigneeId) {
       const message = {
-        userId: validAssigneeId,
-        message: `A new task "${task.title}" has been assigned to you.`,
+        type: 'TASK_ASSIGNED',
+        data: {
+          taskTitle: task.title,
+          userId: validAssigneeId,
+        },
       };
 
       try {
@@ -184,8 +188,11 @@ export const updateTask = async (req: AuthenticatedRequest, res: Response) => {
       }
 
       const message = {
-        userId: updates.assigneeId,
-        message: `You have been assigned to task "${task.title}".`,
+        type: 'TASK_ASSIGNED',
+        data: {
+          taskTitle: task.title,
+          userId: updates.assigneeId,
+        },
       };
 
       try {
@@ -202,6 +209,99 @@ export const updateTask = async (req: AuthenticatedRequest, res: Response) => {
       message: 'Task updated successfully',
       task: updatedTask.toObject({ versionKey: false }),
     });
+  } catch (error: any) {
+    handleError(res, error);
+  }
+};
+
+export const requestTask = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const { id } = req.params;
+    const task = await Task.findById(id);
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    if (task.assigneeId?.toString() === userId) {
+      return res.status(400).json({
+        message: 'You already have this task assigned',
+      });
+    }
+
+    const user = await getUserByID(req, userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (task.assigneeId) {
+      return res.status(400).json({
+        message: 'Task already assigned',
+      });
+    }
+
+    // Create request
+    let request;
+
+    try {
+      request = await TaskRequest.create({
+        taskId: id,
+        requestedBy: user.email,
+      });
+    } catch (err: any) {
+      if (err.code === 11000) {
+        return res.status(400).json({
+          message: 'Request already sent',
+        });
+      }
+      throw err;
+    }
+
+    try {
+      const channel = getChannel();
+
+      if (!channel) {
+        logger.error('RabbitMQ channel not available');
+      } else {
+        const adminId = await getAdminId(req);
+
+        if (!adminId) {
+          logger.warn('Admin ID not found, skipping notification');
+        } else {
+          const message = {
+            type: 'TASK_REQUEST_CREATED',
+            data: {
+              taskId: id,
+              requestedBy: user.email,
+              taskTitle: task.title,
+              adminId,
+            },
+          };
+
+          await sendToQueue(channel, JSON.stringify(message));
+        }
+      }
+    } catch (rabbitmqError: any) {
+      logger.error('RabbitMQ error during task request', rabbitmqError);
+    }
+
+    return res.status(201).json({
+      message: 'Request sent successfully',
+      data: request,
+    });
+  } catch (error: any) {
+    handleError(res, error);
+  }
+};
+
+export const getAllRequests = async (req: Request, res: Response) => {
+  try {
+    const requests = await TaskRequest.find().populate('taskId', 'title');
+    res.json(requests);
   } catch (error: any) {
     handleError(res, error);
   }
@@ -236,6 +336,37 @@ export const deleteTasks = async (req: Request, res: Response) => {
       return res
         .status(200)
         .json({ message: `${deleteResult.deletedCount} tasks have been deleted.` });
+    }
+  } catch (error: any) {
+    handleError(res, error);
+  }
+};
+
+export const deleteRequests = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.query;
+
+    let result;
+    if (id) {
+      if (!isValidObjectId(id as string)) {
+        return res.status(400).json({ message: 'Invalid request ID' });
+      }
+
+      result = await TaskRequest.findByIdAndDelete(id);
+      if (!result) {
+        return res.status(404).json({ message: 'Request not found' });
+      }
+
+      return res.status(200).json({ message: 'Request deleted successfully' });
+    } else {
+      const deleteResult = await TaskRequest.deleteMany({});
+      if (deleteResult.deletedCount === 0) {
+        return res.status(404).json({ message: 'No requests found to delete' });
+      }
+
+      return res
+        .status(200)
+        .json({ message: `${deleteResult.deletedCount} requests have been deleted.` });
     }
   } catch (error: any) {
     handleError(res, error);

@@ -126,6 +126,7 @@ export default function AdminShell({ children }: AdminShellProps) {
     { href: '/admin/dashboard', label: 'Dashboard' },
     { href: '/admin/users', label: 'Users' },
     { href: '/admin/tasks', label: 'Tasks' },
+    { href: '/admin/requests', label: 'Requests' },
     { href: '/admin/profile', label: 'Profile' },
   ];
 
@@ -144,11 +145,10 @@ export default function AdminShell({ children }: AdminShellProps) {
               <Link
                 key={href}
                 href={href}
-                className={`block rounded-md px-3 py-2 text-sm font-medium ${
-                  isActive
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700'
-                }`}
+                className={`block rounded-md px-3 py-2 text-sm font-medium ${isActive
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700'
+                  }`}
               >
                 {label}
               </Link>

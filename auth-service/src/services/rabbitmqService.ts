@@ -19,7 +19,11 @@ export const connectToRabbitMQ = async () => {
       channel = await connection.createChannel();
 
       if (channel) {
-        await channel.assertQueue(USER_QUEUE_NAME, { durable: true });
+        await channel.assertQueue(USER_QUEUE_NAME, {
+          durable: true,
+          deadLetterExchange: `${USER_QUEUE_NAME}.dlx`,
+        });
+
         logger.info(`Connected to RabbitMQ and asserted queue: ${USER_QUEUE_NAME}`);
       } else {
         throw new Error('Failed to create RabbitMQ channel');
