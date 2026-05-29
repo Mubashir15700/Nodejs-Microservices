@@ -10,9 +10,20 @@ interface Task {
   dueDate: string;
 }
 
+export interface Request {
+  id: string;
+  _id: string;
+  taskId: string;
+  requestedBy: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: Date;
+}
+
 interface TasksState {
   tasks: Task[];
+  requests: Request[];
   setTasks: (tasks: Task[]) => void;
+  setRequests: (requests: Request[]) => void;
   addTask: (task: Task) => void;
   updateTask: (updatedTask: Task) => void;
   deleteTask: (taskId: string) => void;
@@ -20,8 +31,10 @@ interface TasksState {
 
 export const useTasksStore = create<TasksState>((set) => ({
   tasks: [],
+  requests: [],
 
   setTasks: (tasks) => set({ tasks }),
+  setRequests: (requests) => set({ requests }),
 
   addTask: (task) =>
     set((state) => ({

@@ -126,6 +126,7 @@ export default function AdminShell({ children }: AdminShellProps) {
     { href: '/admin/dashboard', label: 'Dashboard' },
     { href: '/admin/users', label: 'Users' },
     { href: '/admin/tasks', label: 'Tasks' },
+    { href: '/admin/requests', label: 'Requests' },
     { href: '/admin/profile', label: 'Profile' },
   ];
 

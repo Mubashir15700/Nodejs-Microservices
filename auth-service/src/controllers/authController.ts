@@ -30,8 +30,11 @@ export const register = async (req: Request, res: Response) => {
     }
 
     const message = {
-      userId: adminId,
-      message: `New user registered: ${user.email}`,
+      type: 'USER_REGISTERED',
+      data: {
+        userEmail: user.email,
+        userId: adminId,
+      },
     };
 
     try {

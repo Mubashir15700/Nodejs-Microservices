@@ -101,11 +101,23 @@ export default function TaskDetailsPage() {
   const handleRequestAssign = async () => {
     setRequestingAssign(true);
     setError(null);
+
     try {
-      // Replace with your API call to request assignment
-      // For demo, we just assign currentUserId immediately
-      await new Promise((res) => setTimeout(res, 800));
-      setTask({ ...task, assigneeId: user?.id });
+      const response = await fetchWithAuth(`/api/task?action=requestAssign&id=${params?.taskId}`, {
+        method: 'POST',
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setError(result?.data?.message || result?.message || 'Failed to request assignment');
+        return;
+      }
+
+      if (result.task) {
+        updateTask(result.task);
+        setTask(result.task);
+      }
     } catch {
       setError('Failed to request assignment');
     } finally {

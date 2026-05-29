@@ -7,30 +7,22 @@ async function handleGetAllNotifications(
   res: NextApiResponse,
   token?: string
 ) {
-  if (req.method === 'GET') {
-    try {
-      const axiosInstance = createAxiosInstance(token);
-      const response = await axiosInstance.get('/notifications');
-      return res.status(response.status).json(response.data);
-    } catch (error: unknown) {
-      return handleAxiosError(error, res);
-    }
-  } else {
-    res.status(405).json({ message: 'Method Not Allowed' });
+  try {
+    const axiosInstance = createAxiosInstance(token);
+    const response = await axiosInstance.get('/notifications');
+    return res.status(response.status).json(response.data);
+  } catch (error: unknown) {
+    return handleAxiosError(error, res);
   }
 }
 
 async function handleReadNotifications(req: NextApiRequest, res: NextApiResponse, token?: string) {
-  if (req.method === 'PUT') {
-    try {
-      const axiosInstance = createAxiosInstance(token);
-      const response = await axiosInstance.put('/notifications', req.body);
-      return res.status(response.status).json(response.data);
-    } catch (error: unknown) {
-      return handleAxiosError(error, res);
-    }
-  } else {
-    res.status(405).json({ message: 'Method Not Allowed' });
+  try {
+    const axiosInstance = createAxiosInstance(token);
+    const response = await axiosInstance.put('/notifications', req.body);
+    return res.status(response.status).json(response.data);
+  } catch (error: unknown) {
+    return handleAxiosError(error, res);
   }
 }
 
