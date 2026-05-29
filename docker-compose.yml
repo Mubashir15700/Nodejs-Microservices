@@ -34,17 +34,11 @@ services:
     container_name: redis-server
     ports:
       - "6379"
-    command:
-      [
-        "redis-server",
-        "--maxmemory",
-        "256mb",
-        "--maxmemory-policy",
-        "allkeys-lru",
-      ]
+    command: [ "redis-server", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru" ]
 
   api-gateway:
     build: ./api-gateway
+    image: mubashir15700/api-gateway:latest
     container_name: api-gateway
     ports:
       - "3000:3000" # expose only the gateway
@@ -59,6 +53,7 @@ services:
 
   auth-service:
     build: ./auth-service
+    image: mubashir15700/auth-service:latest
     container_name: auth-service
     ports:
       - "3001" # exposed internally to Docker network only
@@ -71,6 +66,7 @@ services:
 
   user-service:
     build: ./user-service
+    image: mubashir15700/user-service:latest
     container_name: user-service
     ports:
       - "3002"
@@ -83,6 +79,7 @@ services:
 
   task-service:
     build: ./task-service
+    image: mubashir15700/task-service:latest
     container_name: task-service
     ports:
       - "3003"
@@ -96,6 +93,7 @@ services:
 
   notification-service:
     build: ./notification-service
+    image: mubashir15700/notification-service:latest
     container_name: notification-service
     ports:
       - "3004:3004"
@@ -109,6 +107,7 @@ services:
 
   client:
     build: ./client
+    image: mubashir15700/client:latest
     container_name: nextjs-client
     ports:
       - "5173:5173" # expose only the client
